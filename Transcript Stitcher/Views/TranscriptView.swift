@@ -9,7 +9,7 @@ struct TranscriptView: View {
                 ContentUnavailableView(
                     "No Transcript",
                     systemImage: "doc.text",
-                    description: Text("Copy transcript fragments from Teams to begin assembling your transcript.")
+                    description: Text("Copy transcript fragments to begin assembling your transcript.")
                 )
             } else {
                 transcriptContent
@@ -38,15 +38,19 @@ struct TranscriptView: View {
                     appState.copyTranscript()
                 } label: {
                     Label("Copy", systemImage: "doc.on.doc")
+                        .foregroundStyle(.primary)
                 }
                 .disabled(!appState.hasContent)
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
+                    appState.copyTranscript()
                     appState.clear()
                 } label: {
-                    Label("Clear", systemImage: "trash")
+                    Label("Cut", systemImage: "scissors")
+                        .foregroundStyle(.primary)
                 }
+                .keyboardShortcut("x", modifiers: [.command, .shift])
                 .disabled(!appState.hasContent)
             }
         }

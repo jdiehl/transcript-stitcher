@@ -13,28 +13,26 @@ struct TranscriptStitcherApp: App {
         .defaultSize(width: 700, height: 500)
         .commands {
             CommandMenu("Transcript") {
-                Button("Copy Transcript") {
-                    appState.copyTranscript()
-                }
-                .keyboardShortcut("c", modifiers: .command)
-                .disabled(!appState.hasContent)
-
                 Button("Start/Stop") {
                     appState.toggleMonitoring()
                 }
                 .keyboardShortcut("r", modifiers: .command)
+                
+                Divider()
+                
+                Button("Copy Transcript") {
+                    appState.copyTranscript()
+                }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .disabled(!appState.hasContent)
 
-                Button("Clear") {
+                Button("Cut Transcript") {
+                    appState.copyTranscript()
                     appState.clear()
                 }
-                .keyboardShortcut("x", modifiers: .command)
+                .keyboardShortcut("x", modifiers: [.command, .shift])
+                .disabled(!appState.hasContent)
             }
         }
-
-        MenuBarExtra("Transcript Stitcher", systemImage: "doc.on.clipboard") {
-            MenuBarView()
-                .environment(appState)
-        }
-        .menuBarExtraStyle(.window)
     }
 }
