@@ -9,7 +9,7 @@ final class AppState {
     private(set) var chunkCount: Int = 0
     private(set) var isMonitoring: Bool = false
 
-    private let engine = StitchingEngine()
+    private let service = StitchingService()
     private let monitor = ClipboardMonitor()
 
     init() {
@@ -33,9 +33,11 @@ final class AppState {
     }
 
     func addChunk(_ text: String) {
-        let result = engine.stitch(newChunk: text, existingText: assembledText)
-        assembledText = result.assembledText
-        chunkCount += 1
+        Task {
+            let result = await service.addChunk(text)
+            assembledText = result.assembledText
+            chunkCount = await service.getChunkCount()
+        }
     }
 
     func toggleMonitoring() {
@@ -48,8 +50,11 @@ final class AppState {
 
     func clear() {
         stopMonitoring()
-        assembledText = ""
-        chunkCount = 0
+        Task {
+            await service.reset()
+            assembledText = ""
+            chunkCount = 0
+        }
     }
 
     func copyTranscript() {

@@ -6,7 +6,7 @@ struct StitchResult: Sendable {
 
 struct StitchingEngine: Sendable {
 
-    func stitch(newChunk: String, existingText: String) -> StitchResult {
+    nonisolated func stitch(newChunk: String, existingText: String) -> StitchResult {
         let normalizedNew = normalize(newChunk)
         let normalizedExisting = normalize(existingText)
 
@@ -33,14 +33,14 @@ struct StitchingEngine: Sendable {
         }
     }
 
-    private func normalize(_ text: String) -> String {
+    private nonisolated func normalize(_ text: String) -> String {
         text
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func findOverlapLength(suffix: String, prefix: String) -> Int {
+    private nonisolated func findOverlapLength(suffix: String, prefix: String) -> Int {
         let maxOverlap = min(suffix.count, prefix.count)
         let minOverlap = 20
 

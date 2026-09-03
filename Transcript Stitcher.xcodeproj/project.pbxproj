@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		9056A9763049BF1900BA8276 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9056A8AF304962A000BA8276 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9056A8B6304962A000BA8276;
+			remoteInfo = "Transcript Stitcher";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		9056A8B7304962A000BA8276 /* Transcript Stitcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Transcript Stitcher.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9056A9723049BF1900BA8276 /* Transcript StitcherTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Transcript StitcherTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +27,22 @@
 			path = "Transcript Stitcher";
 			sourceTree = "<group>";
 		};
+		9056A9733049BF1900BA8276 /* Transcript StitcherTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Transcript StitcherTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		9056A8B4304962A000BA8276 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9056A96F3049BF1900BA8276 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				9056A8B9304962A000BA8276 /* Transcript Stitcher */,
+				9056A9733049BF1900BA8276 /* Transcript StitcherTests */,
 				9056A8B8304962A000BA8276 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				9056A8B7304962A000BA8276 /* Transcript Stitcher.app */,
+				9056A9723049BF1900BA8276 /* Transcript StitcherTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +95,29 @@
 			productReference = 9056A8B7304962A000BA8276 /* Transcript Stitcher.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9056A9713049BF1900BA8276 /* Transcript StitcherTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9056A9783049BF1900BA8276 /* Build configuration list for PBXNativeTarget "Transcript StitcherTests" */;
+			buildPhases = (
+				9056A96E3049BF1900BA8276 /* Sources */,
+				9056A96F3049BF1900BA8276 /* Frameworks */,
+				9056A9703049BF1900BA8276 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9056A9773049BF1900BA8276 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				9056A9733049BF1900BA8276 /* Transcript StitcherTests */,
+			);
+			name = "Transcript StitcherTests";
+			packageProductDependencies = (
+			);
+			productName = "Transcript StitcherTests";
+			productReference = 9056A9723049BF1900BA8276 /* Transcript StitcherTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +130,10 @@
 				TargetAttributes = {
 					9056A8B6304962A000BA8276 = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					9056A9713049BF1900BA8276 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 9056A8B6304962A000BA8276;
 					};
 				};
 			};
@@ -100,12 +152,20 @@
 			projectRoot = "";
 			targets = (
 				9056A8B6304962A000BA8276 /* Transcript Stitcher */,
+				9056A9713049BF1900BA8276 /* Transcript StitcherTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9056A8B5304962A000BA8276 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9056A9703049BF1900BA8276 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +182,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9056A96E3049BF1900BA8276 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9056A9773049BF1900BA8276 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9056A8B6304962A000BA8276 /* Transcript Stitcher */;
+			targetProxy = 9056A9763049BF1900BA8276 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		9056A8C0304962A200BA8276 /* Debug */ = {
@@ -309,6 +384,46 @@
 			};
 			name = Release;
 		};
+		9056A9793049BF1900BA8276 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K8AJZV2G24;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "didie.space.Transcript-StitcherTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Transcript Stitcher.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Transcript Stitcher";
+			};
+			name = Debug;
+		};
+		9056A97A3049BF1900BA8276 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K8AJZV2G24;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "didie.space.Transcript-StitcherTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Transcript Stitcher.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Transcript Stitcher";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -326,6 +441,15 @@
 			buildConfigurations = (
 				9056A8C3304962A200BA8276 /* Debug */,
 				9056A8C4304962A200BA8276 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9056A9783049BF1900BA8276 /* Build configuration list for PBXNativeTarget "Transcript StitcherTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9056A9793049BF1900BA8276 /* Debug */,
+				9056A97A3049BF1900BA8276 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
