@@ -1,0 +1,43 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build App
+        run: |
+          xcodebuild -project "Transcript Stitcher.xcodeproj" \
+            -scheme "Transcript Stitcher" \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create DMG
+        run: |
+          mkdir -p release
+          hdiutil create -volname "Transcript Stitcher" \
+            -srcfolder "build/Build/Products/Release/Transcript Stitcher.app" \
+            -ov -format UDZO \
+            "release/Transcript Stitcher.dmg"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/Transcript Stitcher.dmg
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
