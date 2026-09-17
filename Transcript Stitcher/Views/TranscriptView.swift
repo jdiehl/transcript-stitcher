@@ -4,17 +4,7 @@ struct TranscriptView: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
-        Group {
-            if !appState.hasContent {
-                ContentUnavailableView(
-                    "No Transcript",
-                    systemImage: "doc.text",
-                    description: Text("Copy transcript fragments to begin assembling your transcript.")
-                )
-            } else {
-                transcriptContent
-            }
-        }
+        transcriptContent
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 if appState.isMonitoring {
@@ -57,12 +47,30 @@ struct TranscriptView: View {
     }
 
     private var transcriptContent: some View {
-        ScrollView {
-            Text(appState.assembledText)
-                .textSelection(.enabled)
-                .font(.system(.body, design: .monospaced))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+        ScrollViewReader { proxy in
+            ScrollView {
+                if !appState.hasContent {
+                    ContentUnavailableView(
+                        "No Transcript",
+                        systemImage: "doc.text",
+                        description: Text("Copy transcript fragments to begin assembling your transcript.")
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 300)
+                } else {
+                    Text(appState.assembledText)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                    Color.clear
+                        .frame(height: 1)
+                        .id("bottom")
+                }
+            }
+            .onChange(of: appState.assembledText) {
+                withAnimation {
+                    proxy.scrollTo("bottom", anchor: .bottom)
+                }
+            }
         }
     }
 }

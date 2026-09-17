@@ -1,3 +1,3 @@
-- Change the font to non-monospace
-- Scroll to bottom after pasting
-- Colorcode different chunks added
+- [x] Change the font to non-monospace
+- [x] Scroll to bottom after pasting
+- [ ] Colorcode different chunks added
