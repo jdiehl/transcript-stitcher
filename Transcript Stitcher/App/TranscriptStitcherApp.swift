@@ -12,6 +12,20 @@ struct TranscriptStitcherApp: App {
         .defaultPosition(.center)
         .defaultSize(width: 700, height: 500)
         .commands {
+            CommandGroup(replacing: .undoRedo) {
+                Button("Undo") {
+                    appState.undoManager.undo()
+                }
+                .keyboardShortcut("z", modifiers: .command)
+                .disabled(!appState.undoManager.canUndo)
+
+                Button("Redo") {
+                    appState.undoManager.redo()
+                }
+                .keyboardShortcut("z", modifiers: [.command, .shift])
+                .disabled(!appState.undoManager.canRedo)
+            }
+
             CommandMenu("Transcript") {
                 Button("Start/Stop") {
                     appState.toggleMonitoring()

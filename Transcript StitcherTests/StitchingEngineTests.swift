@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import Transcript_Stitcher
 
@@ -35,7 +36,7 @@ struct StitchingEngineTests {
         let newFragment = "transcript with some content and more text added"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == "This is the beginning of the transcript with some content and more text added")
-      #expect(result.newChunkLength == newFragment.count)
+        #expect(result.newChunkLength == newFragment.count)
     }
 
     @Test func stitch_noOverlap_concatenatesWithNewline() {
@@ -59,7 +60,7 @@ struct StitchingEngineTests {
         let newFragment = "some repeated content here and new stuff"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == "This is a test with some repeated content here and new stuff")
-      #expect(result.newChunkLength == newFragment.count)
+        #expect(result.newChunkLength == newFragment.count)
     }
 
     @Test func stitch_normalizesCRLF() {
@@ -88,7 +89,7 @@ struct StitchingEngineTests {
         let text = "This is some repeated text content"
         let result = engine.stitch(newFragment: text, existingText: text)
         #expect(result.assembledText == text)
-      #expect(result.newChunkLength == text.count)
+        #expect(result.newChunkLength == text.count)
     }
 
     @Test func stitch_newFragmentIsSubset() {
@@ -153,4 +154,49 @@ struct StitchingEngineTests {
         #expect(result.count == 1)
         #expect(result[0].length == 12)
     }
+
+    // MARK: - Replay Tests
+
+    @Test func replay_emptyFragments_returnsEmpty() {
+        let result = engine.replay(fragments: [])
+        #expect(result.assembledText == "")
+        #expect(result.chunks.isEmpty)
+    }
+
+    @Test func replay_singleFragment_returnsCorrectState() {
+        let fragments = [Fragment(text: "Hello world")]
+        let result = engine.replay(fragments: fragments)
+        #expect(result.assembledText == "Hello world")
+        #expect(result.chunks.count == 1)
+        #expect(result.chunks[0].id == 0)
+        #expect(result.chunks[0].start == 0)
+        #expect(result.chunks[0].length == 11)
+    }
+
+    @Test func replay_multipleNonOverlappingFragments() {
+        let fragments = [
+            Fragment(text: "First"),
+            Fragment(text: "Second"),
+            Fragment(text: "Third")
+        ]
+        let result = engine.replay(fragments: fragments)
+        #expect(result.assembledText == "First\nSecond\nThird")
+        #expect(result.chunks.count == 3)
+        #expect(result.chunks[0].id == 0)
+        #expect(result.chunks[1].id == 1)
+        #expect(result.chunks[2].id == 2)
+    }
+
+    @Test func replay_overlappingFragments_trimsChunks() {
+        let fragments = [
+            Fragment(text: "Hello world and more text"),
+            Fragment(text: "world and more text plus extra")
+        ]
+        let result = engine.replay(fragments: fragments)
+        #expect(result.assembledText == "Hello world and more text plus extra")
+        #expect(result.chunks.count == 2)
+        #expect(result.chunks[0].id == 0)
+        #expect(result.chunks[1].id == 1)
+    }
+
 }

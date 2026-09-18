@@ -5,9 +5,12 @@ import Observation
 @Observable
 @MainActor
 final class AppState {
+    private(set) var fragments: [Fragment] = []
     private(set) var assembledText: String = ""
     private(set) var chunks: [ChunkRange] = []
     private(set) var isMonitoring: Bool = false
+
+    let undoManager = UndoManager()
 
     private let engine = StitchingEngine()
     private let monitor = ClipboardMonitor()
@@ -33,18 +36,40 @@ final class AppState {
     }
 
     func addFragment(_ text: String) {
-        let stitch = engine.stitch(newFragment: text, existingText: assembledText)
-        guard stitch.newChunkLength > 0 else { return }
+        let fragment = Fragment(text: text)
+        fragments.append(fragment)
+        recomputeFromFragments()
 
-        assembledText = stitch.assembledText
-        chunks = engine.updateChunks(
-            existing: chunks,
-            chunkLength: stitch.newChunkLength,
-            textLength: assembledText.count
-        )
-        let nextId = (chunks.map(\.id).max() ?? -1) + 1
-        let chunkStart = assembledText.count - stitch.newChunkLength
-        chunks.append(ChunkRange(id: nextId, start: chunkStart, length: stitch.newChunkLength))
+        undoManager.setActionName("Add Fragment")
+        undoManager.registerUndo(withTarget: self) { target in
+            target.undoAddFragment()
+        }
+    }
+
+    private func undoAddFragment() {
+        guard let removed = fragments.popLast() else { return }
+        recomputeFromFragments()
+
+        undoManager.setActionName("Add Fragment")
+        undoManager.registerUndo(withTarget: self) { target in
+            target.redoAddFragment(removed)
+        }
+    }
+
+    private func redoAddFragment(_ fragment: Fragment) {
+        fragments.append(fragment)
+        recomputeFromFragments()
+
+        undoManager.setActionName("Add Fragment")
+        undoManager.registerUndo(withTarget: self) { target in
+            target.undoAddFragment()
+        }
+    }
+
+    private func recomputeFromFragments() {
+        let result = engine.replay(fragments: fragments)
+        assembledText = result.assembledText
+        chunks = result.chunks
     }
 
     func toggleMonitoring() {
@@ -57,8 +82,29 @@ final class AppState {
 
     func clear() {
         stopMonitoring()
-        assembledText = ""
-        chunks = []
+        let savedFragments = fragments
+        fragments = []
+        recomputeFromFragments()
+
+        undoManager.setActionName("Clear")
+        undoManager.registerUndo(withTarget: self) { target in
+            target.restoreFragments(savedFragments)
+        }
+    }
+
+    private func restoreFragments(_ saved: [Fragment]) {
+        fragments = saved
+        recomputeFromFragments()
+
+        undoManager.setActionName("Clear")
+        undoManager.registerUndo(withTarget: self) { target in
+            let current = target.fragments
+            target.fragments = []
+            target.recomputeFromFragments()
+            target.undoManager.registerUndo(withTarget: target) { innerTarget in
+                innerTarget.restoreFragments(current)
+            }
+        }
     }
 
     func copyTranscript() {

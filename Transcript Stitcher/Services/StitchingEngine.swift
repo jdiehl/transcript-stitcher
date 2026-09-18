@@ -5,6 +5,11 @@ struct StitchResult: Sendable {
     let newChunkLength: Int
 }
 
+struct ReplayResult: Sendable {
+    let assembledText: String
+    let chunks: [ChunkRange]
+}
+
 struct StitchingEngine: Sendable {
 
     nonisolated func stitch(newFragment: String, existingText: String) -> StitchResult {
@@ -95,5 +100,26 @@ struct StitchingEngine: Sendable {
         }
 
         return chunks
+    }
+
+    nonisolated func replay(fragments: [Fragment]) -> ReplayResult {
+        var assembledText = ""
+        var chunks: [ChunkRange] = []
+
+        for (index, fragment) in fragments.enumerated() {
+            let stitch = stitch(newFragment: fragment.text, existingText: assembledText)
+            guard stitch.newChunkLength > 0 else { continue }
+
+            assembledText = stitch.assembledText
+            chunks = updateChunks(
+                existing: chunks,
+                chunkLength: stitch.newChunkLength,
+                textLength: assembledText.count
+            )
+            let chunkStart = assembledText.count - stitch.newChunkLength
+            chunks.append(ChunkRange(id: index, start: chunkStart, length: stitch.newChunkLength))
+        }
+
+        return ReplayResult(assembledText: assembledText, chunks: chunks)
     }
 }
