@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TranscriptView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         transcriptContent
@@ -46,6 +47,17 @@ struct TranscriptView: View {
         }
     }
 
+    private var attributedText: AttributedString {
+        var attributed = AttributedString(appState.assembledText)
+        for chunk in appState.chunks {
+            guard chunk.length > 0 else { continue }
+            let start = attributed.index(attributed.startIndex, offsetByCharacters: chunk.start)
+            let end = attributed.index(attributed.startIndex, offsetByCharacters: chunk.start + chunk.length)
+            attributed[start..<end].foregroundColor = ChunkColors.color(forColorIndex: chunk.id, colorScheme: colorScheme)
+        }
+        return attributed
+    }
+
     private var transcriptContent: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -57,7 +69,7 @@ struct TranscriptView: View {
                     )
                     .frame(maxWidth: .infinity, minHeight: 300)
                 } else {
-                    Text(appState.assembledText)
+                    Text(attributedText)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()

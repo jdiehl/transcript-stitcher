@@ -2,20 +2,33 @@ import Foundation
 
 struct StitchResult: Sendable {
     let assembledText: String
+    let overlapLength: Int
+    let newChunkStart: Int
+    let newChunkLength: Int
 }
 
 struct StitchingEngine: Sendable {
 
-    nonisolated func stitch(newChunk: String, existingText: String) -> StitchResult {
-        let normalizedNew = normalize(newChunk)
+    nonisolated func stitch(newFragment: String, existingText: String) -> StitchResult {
+        let normalizedNew = normalize(newFragment)
         let normalizedExisting = normalize(existingText)
 
         guard !normalizedNew.isEmpty else {
-            return StitchResult(assembledText: existingText)
+            return StitchResult(
+                assembledText: existingText,
+                overlapLength: 0,
+                newChunkStart: existingText.count,
+                newChunkLength: 0
+            )
         }
 
         if normalizedExisting.isEmpty {
-            return StitchResult(assembledText: normalizedNew)
+            return StitchResult(
+                assembledText: normalizedNew,
+                overlapLength: 0,
+                newChunkStart: 0,
+                newChunkLength: normalizedNew.count
+            )
         }
 
         let overlapLength = findOverlapLength(
@@ -26,10 +39,20 @@ struct StitchingEngine: Sendable {
         if overlapLength > 0 {
             let newContent = String(normalizedNew.dropFirst(overlapLength))
             let merged = normalizedExisting + newContent
-            return StitchResult(assembledText: merged)
+            return StitchResult(
+                assembledText: merged,
+                overlapLength: overlapLength,
+                newChunkStart: normalizedExisting.count,
+                newChunkLength: newContent.count
+            )
         } else {
             let merged = normalizedExisting + "\n" + normalizedNew
-            return StitchResult(assembledText: merged)
+            return StitchResult(
+                assembledText: merged,
+                overlapLength: 0,
+                newChunkStart: normalizedExisting.count + 1,
+                newChunkLength: normalizedNew.count
+            )
         }
     }
 

@@ -6,7 +6,7 @@ import Observation
 @MainActor
 final class AppState {
     private(set) var assembledText: String = ""
-    private(set) var chunkCount: Int = 0
+    private(set) var chunks: [ChunkRange] = []
     private(set) var isMonitoring: Bool = false
 
     private let service = StitchingService()
@@ -21,7 +21,7 @@ final class AppState {
     func startMonitoring() {
         monitor.start { [weak self] text in
             Task { @MainActor in
-                self?.addChunk(text)
+                self?.addFragment(text)
             }
         }
         isMonitoring = true
@@ -32,11 +32,11 @@ final class AppState {
         isMonitoring = false
     }
 
-    func addChunk(_ text: String) {
+    func addFragment(_ text: String) {
         Task {
-            let result = await service.addChunk(text)
+            let result = await service.addFragment(text)
             assembledText = result.assembledText
-            chunkCount = await service.getChunkCount()
+            chunks = result.chunks
         }
     }
 
@@ -53,7 +53,7 @@ final class AppState {
         Task {
             await service.reset()
             assembledText = ""
-            chunkCount = 0
+            chunks = []
         }
     }
 
