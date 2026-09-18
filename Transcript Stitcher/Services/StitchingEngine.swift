@@ -2,8 +2,6 @@ import Foundation
 
 struct StitchResult: Sendable {
     let assembledText: String
-    let overlapLength: Int
-    let newChunkStart: Int
     let newChunkLength: Int
 }
 
@@ -16,8 +14,6 @@ struct StitchingEngine: Sendable {
         guard !normalizedNew.isEmpty else {
             return StitchResult(
                 assembledText: existingText,
-                overlapLength: 0,
-                newChunkStart: existingText.count,
                 newChunkLength: 0
             )
         }
@@ -25,8 +21,6 @@ struct StitchingEngine: Sendable {
         if normalizedExisting.isEmpty {
             return StitchResult(
                 assembledText: normalizedNew,
-                overlapLength: 0,
-                newChunkStart: 0,
                 newChunkLength: normalizedNew.count
             )
         }
@@ -41,16 +35,12 @@ struct StitchingEngine: Sendable {
             let merged = normalizedExisting + newContent
             return StitchResult(
                 assembledText: merged,
-                overlapLength: overlapLength,
-                newChunkStart: normalizedExisting.count,
-                newChunkLength: newContent.count
+                newChunkLength: normalizedNew.count
             )
         } else {
             let merged = normalizedExisting + "\n" + normalizedNew
             return StitchResult(
                 assembledText: merged,
-                overlapLength: 0,
-                newChunkStart: normalizedExisting.count + 1,
                 newChunkLength: normalizedNew.count
             )
         }
@@ -65,7 +55,7 @@ struct StitchingEngine: Sendable {
 
     private nonisolated func findOverlapLength(suffix: String, prefix: String) -> Int {
         let maxOverlap = min(suffix.count, prefix.count)
-        let minOverlap = 20
+        let minOverlap = 1
 
         guard maxOverlap >= minOverlap else { return 0 }
 
@@ -79,5 +69,31 @@ struct StitchingEngine: Sendable {
         }
 
         return 0
+    }
+
+    nonisolated func updateChunks(
+        existing: [ChunkRange],
+        chunkLength: Int,
+        textLength: Int
+    ) -> [ChunkRange] {
+        let chunkStart = textLength - chunkLength
+        var chunks = existing
+
+        while let last = chunks.last {
+            let chunkEnd = last.start + last.length
+            if chunkEnd <= chunkStart {
+                break
+            }
+
+            let surviving = chunkStart - last.start
+            if surviving <= 0 {
+                chunks.removeLast()
+            } else {
+                chunks[chunks.count - 1].length = surviving
+                break
+            }
+        }
+
+        return chunks
     }
 }

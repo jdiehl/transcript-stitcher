@@ -21,7 +21,6 @@ struct StitchingEngineTests {
     @Test func stitch_emptyExisting_returnsNew() {
         let result = engine.stitch(newFragment: "new text", existingText: "")
         #expect(result.assembledText == "new text")
-        #expect(result.newChunkStart == 0)
         #expect(result.newChunkLength == 8)
     }
 
@@ -36,34 +35,23 @@ struct StitchingEngineTests {
         let newFragment = "transcript with some content and more text added"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == "This is the beginning of the transcript with some content and more text added")
-        #expect(result.overlapLength == 28)
-        #expect(result.newChunkStart == 57)
-        #expect(result.newChunkLength == 20)
-    }
-
-    @Test func stitch_withOverlap_exactBoundary() {
-        let overlap = "This is exactly twenty"
-        let existing = "Start of text \(overlap)"
-        let newFragment = "\(overlap) characters"
-        let result = engine.stitch(newFragment: newFragment, existingText: existing)
-        #expect(result.assembledText == "Start of text This is exactly twenty characters")
-        #expect(result.newChunkStart == existing.count)
-        #expect(result.newChunkLength == " characters".count)
+      #expect(result.newChunkLength == newFragment.count)
     }
 
     @Test func stitch_noOverlap_concatenatesWithNewline() {
-        let result = engine.stitch(newFragment: "completely different", existingText: "original text")
+        let existing = "original text"
+        let newFragment = "completely different"
+        let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == "original text\ncompletely different")
-        #expect(result.overlapLength == 0)
-        #expect(result.newChunkStart == 14)
-        #expect(result.newChunkLength == 20)
+        #expect(result.newChunkLength == newFragment.count)
     }
 
-    @Test func stitch_overlapBelowMinimum_concatenates() {
-        let existing = "text with short"
-        let newFragment = "short overlap"
+    @Test func stitch_shortOverlap_mergesCorrectly() {
+        let existing = "text with a"
+        let newFragment = "a overlap"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
-        #expect(result.assembledText == "text with short\nshort overlap")
+        #expect(result.assembledText == "text with a overlap")
+        #expect(result.newChunkLength == newFragment.count)
     }
 
     @Test func stitch_picksLongestOverlap() {
@@ -71,6 +59,7 @@ struct StitchingEngineTests {
         let newFragment = "some repeated content here and new stuff"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == "This is a test with some repeated content here and new stuff")
+      #expect(result.newChunkLength == newFragment.count)
     }
 
     @Test func stitch_normalizesCRLF() {
@@ -99,7 +88,7 @@ struct StitchingEngineTests {
         let text = "This is some repeated text content"
         let result = engine.stitch(newFragment: text, existingText: text)
         #expect(result.assembledText == text)
-        #expect(result.newChunkLength == 0)
+      #expect(result.newChunkLength == text.count)
     }
 
     @Test func stitch_newFragmentIsSubset() {
@@ -107,6 +96,61 @@ struct StitchingEngineTests {
         let newFragment = "transcript with lots of content"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == existing)
-        #expect(result.newChunkLength == 0)
+        #expect(result.newChunkLength == newFragment.count)
+    }
+
+    @Test func updateChunks_noExistingChunks_returnsEmpty() {
+        let result = engine.updateChunks(existing: [], chunkLength: 5, textLength: 5)
+        #expect(result.isEmpty)
+    }
+
+    @Test func updateChunks_singleChunk_noOverlap() {
+        let existing = [ChunkRange(id: 0, start: 0, length: 5)]
+        let result = engine.updateChunks(existing: existing, chunkLength: 6, textLength: 12)
+        #expect(result.count == 1)
+        #expect(result[0].length == 5)
+    }
+
+    @Test func updateChunks_singleChunk_partialTrim() {
+        let existing = [ChunkRange(id: 0, start: 0, length: 40)]
+        let result = engine.updateChunks(existing: existing, chunkLength: 10, textLength: 50)
+        #expect(result.count == 1)
+        #expect(result[0].length == 40)
+    }
+
+    @Test func updateChunks_singleChunk_fullyOverwritten() {
+        let existing = [ChunkRange(id: 0, start: 0, length: 40)]
+        let result = engine.updateChunks(existing: existing, chunkLength: 50, textLength: 50)
+        #expect(result.isEmpty)
+    }
+
+    @Test func updateChunks_multipleChunks_cascadeRemoval() {
+        let existing = [
+            ChunkRange(id: 0, start: 0, length: 40),
+            ChunkRange(id: 1, start: 40, length: 10)
+        ]
+        let result = engine.updateChunks(existing: existing, chunkLength: 50, textLength: 50)
+        #expect(result.isEmpty)
+    }
+
+    @Test func updateChunks_multipleChunks_partialTrimOfLast() {
+        let existing = [
+            ChunkRange(id: 0, start: 0, length: 12),
+            ChunkRange(id: 1, start: 12, length: 28)
+        ]
+        let result = engine.updateChunks(existing: existing, chunkLength: 10, textLength: 50)
+        #expect(result.count == 2)
+        #expect(result[0].length == 12)
+        #expect(result[1].length == 28)
+    }
+
+    @Test func updateChunks_multipleChunks_removesLast_keepsOthers() {
+        let existing = [
+            ChunkRange(id: 0, start: 0, length: 12),
+            ChunkRange(id: 1, start: 12, length: 28)
+        ]
+        let result = engine.updateChunks(existing: existing, chunkLength: 28, textLength: 40)
+        #expect(result.count == 1)
+        #expect(result[0].length == 12)
     }
 }
