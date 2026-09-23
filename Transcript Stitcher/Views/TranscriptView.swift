@@ -3,6 +3,7 @@ import SwiftUI
 struct TranscriptView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.colorScheme) private var colorScheme
+    @State private var cache = AttributedTextCache()
 
     var body: some View {
         transcriptContent
@@ -46,14 +47,11 @@ struct TranscriptView: View {
     }
 
     private var attributedText: AttributedString {
-        var attributed = AttributedString(appState.assembledText)
-        for chunk in appState.chunks {
-            guard chunk.length > 0 else { continue }
-            let start = attributed.index(attributed.startIndex, offsetByCharacters: chunk.start)
-            let end = attributed.index(attributed.startIndex, offsetByCharacters: chunk.start + chunk.length)
-            attributed[start..<end].foregroundColor = ChunkColors.color(forColorIndex: chunk.id, colorScheme: colorScheme)
-        }
-        return attributed
+        cache.attributedText(
+            text: appState.assembledText,
+            chunks: appState.chunks,
+            colorScheme: colorScheme
+        )
     }
 
     private var transcriptContent: some View {
@@ -82,6 +80,37 @@ struct TranscriptView: View {
                 }
             }
         }
+    }
+}
+
+private final class AttributedTextCache {
+    private var cachedText: String?
+    private var cachedChunks: [ChunkRange]?
+    private var cachedColorScheme: ColorScheme?
+    private var cachedResult: AttributedString?
+
+    func attributedText(text: String, chunks: [ChunkRange], colorScheme: ColorScheme) -> AttributedString {
+        if let cached = cachedResult,
+           cachedText == text,
+           cachedChunks == chunks,
+           cachedColorScheme == colorScheme {
+            return cached
+        }
+
+        var attributed = AttributedString(text)
+        for chunk in chunks {
+            guard chunk.length > 0 else { continue }
+            let start = attributed.index(attributed.startIndex, offsetByCharacters: chunk.start)
+            let end = attributed.index(attributed.startIndex, offsetByCharacters: chunk.start + chunk.length)
+            attributed[start..<end].foregroundColor = ChunkColors.color(forColorIndex: chunk.id, colorScheme: colorScheme)
+        }
+
+        cachedText = text
+        cachedChunks = chunks
+        cachedColorScheme = colorScheme
+        cachedResult = attributed
+
+        return attributed
     }
 }
 
