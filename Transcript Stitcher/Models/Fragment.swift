@@ -1,6 +1,6 @@
 import Foundation
 
-struct Fragment: Identifiable, Sendable, Equatable {
+struct Fragment: Identifiable, Sendable, Equatable, Codable {
     let id: UUID
     let text: String
 

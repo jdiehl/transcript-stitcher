@@ -3,12 +3,16 @@ import Foundation
 
 @MainActor
 final class ClipboardMonitor {
-    private var timer: Timer?
+    private var timer: DispatchSourceTimer?
     private var lastChangeCount: Int = 0
     private var lastContent: String = ""
     private var onChange: (@Sendable (String) -> Void)?
+    private var activationObserver: NSObjectProtocol?
+    private var keyObserver: NSObjectProtocol?
 
-    private let pollInterval: TimeInterval = 0.5
+    private let backgroundInterval: TimeInterval = 0.2
+    private let foregroundInterval: TimeInterval = 1.0
+    private let leeway: DispatchTimeInterval = .milliseconds(50)
 
     func start(onChange: @escaping @Sendable (String) -> Void) {
         stop()
@@ -16,18 +20,47 @@ final class ClipboardMonitor {
         lastChangeCount = NSPasteboard.general.changeCount
         lastContent = ""
 
-        let t = Timer(timeInterval: pollInterval, repeats: true) { [weak self] _ in
+        let queue = DispatchQueue.main
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now(), repeating: backgroundInterval, leeway: leeway)
+        timer.setEventHandler { [weak self] in
+            self?.poll()
+        }
+        timer.resume()
+        self.timer = timer
+
+        activationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
             Task { @MainActor in
                 self?.poll()
             }
         }
-        RunLoop.main.add(t, forMode: .common)
-        timer = t
+
+        keyObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didBecomeKeyNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.poll()
+            }
+        }
     }
 
     func stop() {
-        timer?.invalidate()
+        timer?.cancel()
         timer = nil
+        if let observer = activationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        if let observer = keyObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        activationObserver = nil
+        keyObserver = nil
         onChange = nil
     }
 

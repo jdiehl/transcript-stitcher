@@ -15,7 +15,9 @@ final class AppState {
     private let engine = StitchingEngine()
     private let monitor = ClipboardMonitor()
 
-    init() {
+    init(fragments: [Fragment] = []) {
+        self.fragments = fragments
+        recomputeFromFragments()
         startMonitoring()
     }
 
