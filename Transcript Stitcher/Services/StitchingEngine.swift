@@ -10,6 +10,11 @@ struct ReplayResult: Sendable {
     let chunks: [ChunkRange]
 }
 
+struct AppendResult: Sendable {
+    let assembledText: String
+    let chunks: [ChunkRange]
+}
+
 struct StitchingEngine: Sendable {
 
     nonisolated func stitch(newFragment: String, existingText: String) -> StitchResult {
@@ -107,19 +112,39 @@ struct StitchingEngine: Sendable {
         var chunks: [ChunkRange] = []
 
         for (index, fragment) in fragments.enumerated() {
-            let stitch = stitch(newFragment: fragment.text, existingText: assembledText)
-            guard stitch.newChunkLength > 0 else { continue }
-
-            assembledText = stitch.assembledText
-            chunks = updateChunks(
-                existing: chunks,
-                chunkLength: stitch.newChunkLength,
-                textLength: assembledText.count
+            let result = appendFragment(
+                newFragment: fragment.text,
+                fragmentIndex: index,
+                existingText: assembledText,
+                existingChunks: chunks
             )
-            let chunkStart = assembledText.count - stitch.newChunkLength
-            chunks.append(ChunkRange(id: index, start: chunkStart, length: stitch.newChunkLength))
+            assembledText = result.assembledText
+            chunks = result.chunks
         }
 
         return ReplayResult(assembledText: assembledText, chunks: chunks)
+    }
+
+    nonisolated func appendFragment(
+        newFragment: String,
+        fragmentIndex: Int,
+        existingText: String,
+        existingChunks: [ChunkRange]
+    ) -> AppendResult {
+        let stitch = stitch(newFragment: newFragment, existingText: existingText)
+        guard stitch.newChunkLength > 0 else {
+            return AppendResult(assembledText: existingText, chunks: existingChunks)
+        }
+
+        let assembledText = stitch.assembledText
+        var chunks = updateChunks(
+            existing: existingChunks,
+            chunkLength: stitch.newChunkLength,
+            textLength: assembledText.count
+        )
+        let chunkStart = assembledText.count - stitch.newChunkLength
+        chunks.append(ChunkRange(id: fragmentIndex, start: chunkStart, length: stitch.newChunkLength))
+
+        return AppendResult(assembledText: assembledText, chunks: chunks)
     }
 }

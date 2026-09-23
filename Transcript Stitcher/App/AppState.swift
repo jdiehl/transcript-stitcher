@@ -40,7 +40,14 @@ final class AppState {
     func addFragment(_ text: String) {
         let fragment = Fragment(text: text)
         fragments.append(fragment)
-        recomputeFromFragments()
+        let result = engine.appendFragment(
+            newFragment: text,
+            fragmentIndex: fragments.count - 1,
+            existingText: assembledText,
+            existingChunks: chunks
+        )
+        assembledText = result.assembledText
+        chunks = result.chunks
 
         undoManager.setActionName("Add Fragment")
         undoManager.registerUndo(withTarget: self) { target in
@@ -60,7 +67,14 @@ final class AppState {
 
     private func redoAddFragment(_ fragment: Fragment) {
         fragments.append(fragment)
-        recomputeFromFragments()
+        let result = engine.appendFragment(
+            newFragment: fragment.text,
+            fragmentIndex: fragments.count - 1,
+            existingText: assembledText,
+            existingChunks: chunks
+        )
+        assembledText = result.assembledText
+        chunks = result.chunks
 
         undoManager.setActionName("Add Fragment")
         undoManager.registerUndo(withTarget: self) { target in

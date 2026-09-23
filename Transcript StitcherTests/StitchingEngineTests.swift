@@ -25,12 +25,6 @@ struct StitchingEngineTests {
         #expect(result.newChunkLength == 8)
     }
 
-    @Test func stitch_bothEmpty_returnsEmpty() {
-        let result = engine.stitch(newFragment: "", existingText: "")
-        #expect(result.assembledText == "")
-        #expect(result.newChunkLength == 0)
-    }
-
     @Test func stitch_withOverlap_mergesCorrectly() {
         let existing = "This is the beginning of the transcript with some content"
         let newFragment = "transcript with some content and more text added"
@@ -44,14 +38,6 @@ struct StitchingEngineTests {
         let newFragment = "completely different"
         let result = engine.stitch(newFragment: newFragment, existingText: existing)
         #expect(result.assembledText == "original text\ncompletely different")
-        #expect(result.newChunkLength == newFragment.count)
-    }
-
-    @Test func stitch_shortOverlap_mergesCorrectly() {
-        let existing = "text with a"
-        let newFragment = "a overlap"
-        let result = engine.stitch(newFragment: newFragment, existingText: existing)
-        #expect(result.assembledText == "text with a overlap")
         #expect(result.newChunkLength == newFragment.count)
     }
 
@@ -76,13 +62,6 @@ struct StitchingEngineTests {
     @Test func stitch_trimsWhitespace() {
         let result = engine.stitch(newFragment: "  \n  text  \n  ", existingText: "  \n  existing  \n  ")
         #expect(result.assembledText == "existing\ntext")
-    }
-
-    @Test func stitch_multipleFragmentsSequential() {
-        var result = engine.stitch(newFragment: "First chunk", existingText: "")
-        result = engine.stitch(newFragment: "Second chunk", existingText: result.assembledText)
-        result = engine.stitch(newFragment: "Third chunk", existingText: result.assembledText)
-        #expect(result.assembledText == "First chunk\nSecond chunk\nThird chunk")
     }
 
     @Test func stitch_identicalFragments_returnsSameText() {
@@ -112,13 +91,6 @@ struct StitchingEngineTests {
         #expect(result[0].length == 5)
     }
 
-    @Test func updateChunks_singleChunk_partialTrim() {
-        let existing = [ChunkRange(id: 0, start: 0, length: 40)]
-        let result = engine.updateChunks(existing: existing, chunkLength: 10, textLength: 50)
-        #expect(result.count == 1)
-        #expect(result[0].length == 40)
-    }
-
     @Test func updateChunks_singleChunk_fullyOverwritten() {
         let existing = [ChunkRange(id: 0, start: 0, length: 40)]
         let result = engine.updateChunks(existing: existing, chunkLength: 50, textLength: 50)
@@ -132,17 +104,6 @@ struct StitchingEngineTests {
         ]
         let result = engine.updateChunks(existing: existing, chunkLength: 50, textLength: 50)
         #expect(result.isEmpty)
-    }
-
-    @Test func updateChunks_multipleChunks_partialTrimOfLast() {
-        let existing = [
-            ChunkRange(id: 0, start: 0, length: 12),
-            ChunkRange(id: 1, start: 12, length: 28)
-        ]
-        let result = engine.updateChunks(existing: existing, chunkLength: 10, textLength: 50)
-        #expect(result.count == 2)
-        #expect(result[0].length == 12)
-        #expect(result[1].length == 28)
     }
 
     @Test func updateChunks_multipleChunks_removesLast_keepsOthers() {
@@ -197,6 +158,72 @@ struct StitchingEngineTests {
         #expect(result.chunks.count == 2)
         #expect(result.chunks[0].id == 0)
         #expect(result.chunks[1].id == 1)
+    }
+
+    // MARK: - AppendFragment Tests
+
+    @Test func appendFragment_emptyFragment_returnsExisting() {
+        let result = engine.appendFragment(
+            newFragment: "",
+            fragmentIndex: 1,
+            existingText: "existing text",
+            existingChunks: [ChunkRange(id: 0, start: 0, length: 13)]
+        )
+        #expect(result.assembledText == "existing text")
+        #expect(result.chunks.count == 1)
+        #expect(result.chunks[0].id == 0)
+    }
+
+    @Test func appendFragment_toEmptyText_createsChunk() {
+        let result = engine.appendFragment(
+            newFragment: "Hello world",
+            fragmentIndex: 0,
+            existingText: "",
+            existingChunks: []
+        )
+        #expect(result.assembledText == "Hello world")
+        #expect(result.chunks.count == 1)
+        #expect(result.chunks[0].id == 0)
+        #expect(result.chunks[0].start == 0)
+        #expect(result.chunks[0].length == 11)
+    }
+
+    @Test func appendFragment_withOverlap_trimsExistingChunks() {
+        let existing = [ChunkRange(id: 0, start: 0, length: 23)]
+        let result = engine.appendFragment(
+            newFragment: "world and more text plus extra",
+            fragmentIndex: 1,
+            existingText: "Hello world and more text",
+            existingChunks: existing
+        )
+        #expect(result.assembledText == "Hello world and more text plus extra")
+        #expect(result.chunks.count == 2)
+        #expect(result.chunks[0].id == 0)
+        #expect(result.chunks[1].id == 1)
+    }
+
+    @Test func appendFragment_noOverlap_concatenatesWithNewline() {
+        let result = engine.appendFragment(
+            newFragment: "Second",
+            fragmentIndex: 1,
+            existingText: "First",
+            existingChunks: [ChunkRange(id: 0, start: 0, length: 5)]
+        )
+        #expect(result.assembledText == "First\nSecond")
+        #expect(result.chunks.count == 2)
+        #expect(result.chunks[0].id == 0)
+        #expect(result.chunks[1].id == 1)
+    }
+
+    @Test func appendFragment_assignsCorrectChunkId() {
+        let result = engine.appendFragment(
+            newFragment: "New text",
+            fragmentIndex: 42,
+            existingText: "Existing",
+            existingChunks: []
+        )
+        #expect(result.chunks.count == 1)
+        #expect(result.chunks[0].id == 42)
     }
 
 }

@@ -8,7 +8,7 @@
 - [x] Replace timer-based clipboard polling with NSWorkspace notifications or DispatchSource for better responsiveness
 - [ ] Optimize StitchingEngine overlap detection from O(n²) using suffix arrays or KMP algorithm
 - [x] Cache attributedText in AppState instead of recomputing on every render
-- [ ] Implement incremental stitching instead of full replay on every fragment addition
+- [x] Implement incremental stitching instead of full replay on every fragment addition
 
 ## Code Quality
 
