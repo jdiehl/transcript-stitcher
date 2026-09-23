@@ -1,14 +1,15 @@
 ## Features
 
+- [ ] Diable pasteboard monitor when app is active
 - [ ] Implement document architecture for saving/loading transcripts
 
 ## Code Quality
 
 - [ ] Change ChunkRange.id from fragment index to UUID for safer fragment removal
-- [ ] Extract repetitive undo registration into a helper method
-- [ ] Replace magic numbers with named constants (poll interval, hue step)
+- [x] Extract repetitive undo registration into a helper method
+- [x] Replace magic numbers with named constants (poll interval, hue step)
 - [ ] Refactor ClipboardMonitor to use AsyncStream instead of @Sendable callback
-- [ ] Add error handling for clipboard access failures
+- [x] Add error handling for clipboard access failures
 - [ ] Enhance Fragment model with timestamp and source metadata
 ## Testing
 

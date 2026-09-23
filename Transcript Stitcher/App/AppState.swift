@@ -15,6 +15,13 @@ final class AppState {
     private let engine = StitchingEngine()
     private let monitor = ClipboardMonitor()
 
+    private func registerUndo(_ actionName: String, action: @escaping (AppState) -> Void) {
+        undoManager.setActionName(actionName)
+        undoManager.registerUndo(withTarget: self) { target in
+            action(target)
+        }
+    }
+
     init(fragments: [Fragment] = []) {
         self.fragments = fragments
         recomputeFromFragments()
@@ -49,20 +56,14 @@ final class AppState {
         assembledText = result.assembledText
         chunks = result.chunks
 
-        undoManager.setActionName("Add Fragment")
-        undoManager.registerUndo(withTarget: self) { target in
-            target.undoAddFragment()
-        }
+        registerUndo("Add Fragment") { $0.undoAddFragment() }
     }
 
     private func undoAddFragment() {
         guard let removed = fragments.popLast() else { return }
         recomputeFromFragments()
 
-        undoManager.setActionName("Add Fragment")
-        undoManager.registerUndo(withTarget: self) { target in
-            target.redoAddFragment(removed)
-        }
+        registerUndo("Add Fragment") { $0.redoAddFragment(removed) }
     }
 
     private func redoAddFragment(_ fragment: Fragment) {
@@ -76,10 +77,7 @@ final class AppState {
         assembledText = result.assembledText
         chunks = result.chunks
 
-        undoManager.setActionName("Add Fragment")
-        undoManager.registerUndo(withTarget: self) { target in
-            target.undoAddFragment()
-        }
+        registerUndo("Add Fragment") { $0.undoAddFragment() }
     }
 
     private func recomputeFromFragments() {
@@ -102,36 +100,32 @@ final class AppState {
         fragments = []
         recomputeFromFragments()
 
-        undoManager.setActionName("Clear")
-        undoManager.registerUndo(withTarget: self) { target in
-            target.restoreFragments(savedFragments)
-        }
+        registerUndo("Clear") { $0.restoreFragments(savedFragments) }
     }
 
     private func restoreFragments(_ saved: [Fragment]) {
         fragments = saved
         recomputeFromFragments()
 
-        undoManager.setActionName("Clear")
-        undoManager.registerUndo(withTarget: self) { target in
+        registerUndo("Clear") { target in
             let current = target.fragments
             target.fragments = []
             target.recomputeFromFragments()
-            target.undoManager.registerUndo(withTarget: target) { innerTarget in
-                innerTarget.restoreFragments(current)
-            }
+            target.registerUndo("Clear") { $0.restoreFragments(current) }
         }
     }
 
-    func copyTranscript() {
+    func copyTranscript() throws {
         stopMonitoring()
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.setString(assembledText, forType: .string)
+        guard pasteboard.setString(assembledText, forType: .string) else {
+            throw ClipboardError.writeFailed
+        }
     }
   
-    func cutTranscript() {
-        copyTranscript()
+    func cutTranscript() throws {
+        try copyTranscript()
         clear()
     }
 }

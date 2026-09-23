@@ -1,6 +1,18 @@
 import AppKit
 import Foundation
 
+enum ClipboardError: Error, LocalizedError {
+    case readFailed
+    case writeFailed
+
+    var errorDescription: String? {
+        switch self {
+        case .readFailed: return "Unable to read from the clipboard."
+        case .writeFailed: return "Unable to write to the clipboard."
+        }
+    }
+}
+
 @MainActor
 final class ClipboardMonitor {
     private var timer: DispatchSourceTimer?
@@ -71,7 +83,14 @@ final class ClipboardMonitor {
         guard currentCount != lastChangeCount else { return }
         lastChangeCount = currentCount
 
-        guard let text = pasteboard.string(forType: .string) else { return }
+        let text: String?
+        do {
+            text = try readPasteboard(pasteboard)
+        } catch {
+            return
+        }
+
+        guard let text else { return }
 
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -79,5 +98,15 @@ final class ClipboardMonitor {
 
         lastContent = trimmed
         onChange?(trimmed)
+    }
+
+    private func readPasteboard(_ pasteboard: NSPasteboard) throws -> String? {
+        guard let text = pasteboard.string(forType: .string) else {
+            if pasteboard.changeCount != lastChangeCount {
+                throw ClipboardError.readFailed
+            }
+            return nil
+        }
+        return text
     }
 }

@@ -3,9 +3,36 @@ import SwiftUI
 struct MonitoringStatusBar: View {
     let isMonitoring: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private enum Layout {
+        static let hStackSpacing: CGFloat = 8
+        static let horizontalPadding: CGFloat = 12
+        static let verticalPadding: CGFloat = 8
+        static let animationCycleDuration: Double = 4
+        static let gradientDoubleWidthFactor: CGFloat = 2
+        static let separatorHeight: CGFloat = 1
+    }
+
+    private enum Opacity {
+        static let animatedGradient: Double = 0.3
+        static let staticGradient: Double = 0.2
+        static let idleBackground: Double = 0.05
+    }
+
+    private static let animatedGradientStops: [Gradient.Stop] = [
+        .init(color: .blue.opacity(Opacity.animatedGradient), location: 0.0),
+        .init(color: .purple.opacity(Opacity.animatedGradient), location: 0.125),
+        .init(color: .pink.opacity(Opacity.animatedGradient), location: 0.25),
+        .init(color: .orange.opacity(Opacity.animatedGradient), location: 0.375),
+        .init(color: .blue.opacity(Opacity.animatedGradient), location: 0.5),
+        .init(color: .purple.opacity(Opacity.animatedGradient), location: 0.625),
+        .init(color: .pink.opacity(Opacity.animatedGradient), location: 0.75),
+        .init(color: .orange.opacity(Opacity.animatedGradient), location: 0.875),
+        .init(color: .blue.opacity(Opacity.animatedGradient), location: 1.0)
+    ]
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Layout.hStackSpacing) {
             Image(systemName: isMonitoring ? "record.circle.fill" : "pause.circle.fill")
                 .foregroundStyle(isMonitoring ? .red : .secondary)
                 .symbolEffect(.pulse, isActive: isMonitoring && !reduceMotion)
@@ -16,45 +43,35 @@ struct MonitoringStatusBar: View {
             
             Spacer()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, Layout.horizontalPadding)
+        .padding(.vertical, Layout.verticalPadding)
         .background(
             Group {
                 if isMonitoring && !reduceMotion {
                     GeometryReader { geo in
                         TimelineView(.animation) { context in
                             let elapsed = context.date.timeIntervalSinceReferenceDate
-                            let offset = CGFloat(elapsed.truncatingRemainder(dividingBy: 4) / 4) * geo.size.width
+                            let offset = CGFloat(elapsed.truncatingRemainder(dividingBy: Layout.animationCycleDuration) / Layout.animationCycleDuration) * geo.size.width
                             
-                            let gradient = Gradient(stops: [
-                                .init(color: .blue.opacity(0.3), location: 0.0),
-                                .init(color: .purple.opacity(0.3), location: 0.125),
-                                .init(color: .pink.opacity(0.3), location: 0.25),
-                                .init(color: .orange.opacity(0.3), location: 0.375),
-                                .init(color: .blue.opacity(0.3), location: 0.5),
-                                .init(color: .purple.opacity(0.3), location: 0.625),
-                                .init(color: .pink.opacity(0.3), location: 0.75),
-                                .init(color: .orange.opacity(0.3), location: 0.875),
-                                .init(color: .blue.opacity(0.3), location: 1.0)
-                            ])
+                            let gradient = Gradient(stops: Self.animatedGradientStops)
                             
                             LinearGradient(
                                 gradient: gradient,
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
-                            .frame(width: geo.size.width * 2)
+                            .frame(width: geo.size.width * Layout.gradientDoubleWidthFactor)
                             .offset(x: -offset)
                         }
                     }
                 } else if isMonitoring {
                     LinearGradient(
-                        colors: [.blue.opacity(0.2), .purple.opacity(0.2)],
+                        colors: [.blue.opacity(Opacity.staticGradient), .purple.opacity(Opacity.staticGradient)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 } else {
-                    Color.secondary.opacity(0.05)
+                    Color.secondary.opacity(Opacity.idleBackground)
                 }
             }
         )

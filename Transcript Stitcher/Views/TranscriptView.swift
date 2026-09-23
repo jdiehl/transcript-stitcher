@@ -27,7 +27,7 @@ struct TranscriptView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    appState.copyTranscript()
+                    try? appState.copyTranscript()
                 } label: {
                     Label("Copy", systemImage: "doc.on.doc")
                         .foregroundStyle(.primary)
@@ -36,7 +36,7 @@ struct TranscriptView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    appState.cutTranscript()
+                    try? appState.cutTranscript()
                 } label: {
                     Label("Cut", systemImage: "scissors")
                         .foregroundStyle(.primary)

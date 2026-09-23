@@ -39,13 +39,13 @@ struct AppCommands: Commands {
             Divider()
             
             Button("Copy Transcript") {
-                appState.copyTranscript()
+                try? appState.copyTranscript()
             }
             .keyboardShortcut("c", modifiers: [.command, .shift])
             .disabled(!appState.hasContent)
 
             Button("Cut Transcript") {
-                appState.cutTranscript()
+                try? appState.cutTranscript()
             }
             .keyboardShortcut("x", modifiers: [.command, .shift])
             .disabled(!appState.hasContent)
