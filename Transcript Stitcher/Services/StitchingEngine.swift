@@ -63,6 +63,8 @@ struct StitchingEngine: Sendable {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // O(n²) brute-force approach. Simpler than KMP/Z-algorithm and sufficient for typical
+    // transcript fragments (100-1000 chars). Revisit only if profiling shows this as a bottleneck.
     private nonisolated func findOverlapLength(suffix: String, prefix: String) -> Int {
         let maxOverlap = min(suffix.count, prefix.count)
         let minOverlap = 1

@@ -1,14 +1,6 @@
 ## Features
 
-- [x] Add window state restoration with @SceneStorage to preserve transcript across app launches
 - [ ] Implement document architecture for saving/loading transcripts
-
-## Performance
-
-- [x] Replace timer-based clipboard polling with NSWorkspace notifications or DispatchSource for better responsiveness
-- [ ] Optimize StitchingEngine overlap detection from O(n²) using suffix arrays or KMP algorithm
-- [x] Cache attributedText in AppState instead of recomputing on every render
-- [x] Implement incremental stitching instead of full replay on every fragment addition
 
 ## Code Quality
 
@@ -20,6 +12,6 @@
 - [ ] Enhance Fragment model with timestamp and source metadata
 ## Testing
 
-- [ ] Add tests for AppState (undo/redo, fragment management)
+- [x] Add tests for AppState (undo/redo, fragment management)
 - [ ] Add integration tests for clipboard → stitching → UI flow
 
