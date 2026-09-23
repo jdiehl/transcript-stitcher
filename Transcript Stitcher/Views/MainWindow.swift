@@ -9,7 +9,7 @@ struct MainWindow: View {
             TranscriptView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 600, minHeight: 400)
+        .frame(minWidth: 400, idealWidth: 600, minHeight: 350, idealHeight: 400)
     }
 }
 

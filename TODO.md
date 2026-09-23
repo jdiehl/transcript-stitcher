@@ -28,4 +28,4 @@
 
 ## macOS Integration
 
-- [ ] Add .frame(idealWidth:idealHeight:) for better window sizing
+- [x] Add .frame(idealWidth:idealHeight:) for better window sizing
