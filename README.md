@@ -40,8 +40,8 @@ xcodebuild -project "Transcript Stitcher.xcodeproj" -scheme "Transcript Stitcher
 Push a version tag to trigger automated build and release:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag 1.0
+git push origin 1.0
 ```
 
 ## Support
