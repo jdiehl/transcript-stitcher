@@ -113,4 +113,9 @@ final class AppState {
         pasteboard.clearContents()
         pasteboard.setString(assembledText, forType: .string)
     }
+  
+    func cutTranscript() {
+        copyTranscript()
+        clear()
+    }
 }

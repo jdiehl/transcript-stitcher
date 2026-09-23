@@ -41,8 +41,7 @@ struct TranscriptStitcherApp: App {
                 .disabled(!appState.hasContent)
 
                 Button("Cut Transcript") {
-                    appState.copyTranscript()
-                    appState.clear()
+                    appState.cutTranscript()
                 }
                 .keyboardShortcut("x", modifiers: [.command, .shift])
                 .disabled(!appState.hasContent)

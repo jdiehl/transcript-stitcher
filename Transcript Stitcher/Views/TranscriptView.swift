@@ -35,13 +35,11 @@ struct TranscriptView: View {
             }
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    appState.copyTranscript()
-                    appState.clear()
+                    appState.cutTranscript()
                 } label: {
                     Label("Cut", systemImage: "scissors")
                         .foregroundStyle(.primary)
                 }
-                .keyboardShortcut("x", modifiers: [.command, .shift])
                 .disabled(!appState.hasContent)
             }
         }
