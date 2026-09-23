@@ -4,6 +4,18 @@ struct AppCommands: Commands {
     let appState: AppState
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About Transcript Stitcher") {
+                NSApp.orderFrontStandardAboutPanel(options: [
+                    NSApplication.AboutPanelOptionKey(rawValue: "Copyright"): "© 2026 Jonathan Diehl",
+                    NSApplication.AboutPanelOptionKey(rawValue: "Credits"): NSAttributedString(
+                        string: "https://github.com/jdiehl/transcript-stitcher",
+                        attributes: [.link: URL(string: "https://github.com/jdiehl/transcript-stitcher")!]
+                    )
+                ])
+            }
+        }
+
         CommandGroup(replacing: .undoRedo) {
             Button("Undo") {
                 appState.undoManager.undo()
