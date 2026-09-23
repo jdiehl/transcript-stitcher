@@ -1,6 +1,6 @@
 ## Features
 
-- [ ] Diable pasteboard monitor when app is active
+- [x] Diable pasteboard monitor when app is active
 - [ ] Implement document architecture for saving/loading transcripts
 
 ## Code Quality

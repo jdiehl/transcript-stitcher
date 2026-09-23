@@ -20,7 +20,8 @@ final class ClipboardMonitor {
     private var lastContent: String = ""
     private var onChange: (@Sendable (String) -> Void)?
     private var activationObserver: NSObjectProtocol?
-    private var keyObserver: NSObjectProtocol?
+    private var deactivationObserver: NSObjectProtocol?
+    private var isSuspended: Bool = false
 
     private let backgroundInterval: TimeInterval = 0.2
     private let foregroundInterval: TimeInterval = 1.0
@@ -32,6 +33,48 @@ final class ClipboardMonitor {
         lastChangeCount = NSPasteboard.general.changeCount
         lastContent = ""
 
+        activationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.suspend()
+            }
+        }
+
+        deactivationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.resume()
+            }
+        }
+
+        if let app = NSApp, app.isActive {
+            isSuspended = true
+        } else {
+            startTimer()
+        }
+    }
+
+    func stop() {
+        stopTimer()
+        if let observer = activationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        if let observer = deactivationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        activationObserver = nil
+        deactivationObserver = nil
+        onChange = nil
+        isSuspended = false
+    }
+
+    private func startTimer() {
         let queue = DispatchQueue.main
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now(), repeating: backgroundInterval, leeway: leeway)
@@ -40,40 +83,24 @@ final class ClipboardMonitor {
         }
         timer.resume()
         self.timer = timer
-
-        activationObserver = NotificationCenter.default.addObserver(
-            forName: NSApplication.didBecomeActiveNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.poll()
-            }
-        }
-
-        keyObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.didBecomeKeyNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.poll()
-            }
-        }
     }
 
-    func stop() {
+    private func stopTimer() {
         timer?.cancel()
         timer = nil
-        if let observer = activationObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        if let observer = keyObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        activationObserver = nil
-        keyObserver = nil
-        onChange = nil
+    }
+
+    private func suspend() {
+        guard !isSuspended else { return }
+        isSuspended = true
+        stopTimer()
+    }
+
+    private func resume() {
+        guard isSuspended else { return }
+        isSuspended = false
+        startTimer()
+        poll()
     }
 
     private func poll() {
